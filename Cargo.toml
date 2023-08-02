@@ -46,6 +46,7 @@ features = ["serde", "rand-std", "global-context"]
 
 [dependencies.p256]
 version = "0.13.2"
+default-features = false
 features = ["ecdsa", "ecdsa-core"]
 
 [dev-dependencies]
