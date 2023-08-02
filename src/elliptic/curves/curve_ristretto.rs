@@ -13,6 +13,7 @@ use std::sync::atomic;
 use curve25519_dalek::constants::{BASEPOINT_ORDER, RISTRETTO_BASEPOINT_POINT};
 use curve25519_dalek::ristretto::CompressedRistretto;
 use curve25519_dalek::traits::{Identity, IsIdentity};
+use curve25519_dalek::Scalar;
 use generic_array::GenericArray;
 use rand::thread_rng;
 use sha2::{Digest, Sha256};
@@ -98,7 +99,7 @@ impl ECScalar for RistrettoScalar {
     fn zero() -> RistrettoScalar {
         RistrettoScalar {
             purpose: "zero",
-            fe: SK::zero().into(),
+            fe: SK::ZERO.into(),
         }
     }
 
@@ -129,7 +130,7 @@ impl ECScalar for RistrettoScalar {
         let bytes: [u8; 32] = bytes.try_into().or(Err(DeserializationError))?;
         Ok(RistrettoScalar {
             purpose: "from_bigint",
-            fe: SK::from_canonical_bytes(bytes)
+            fe: Option::<Scalar>::from(SK::from_canonical_bytes(bytes))
                 .ok_or(DeserializationError)?
                 .into(),
         })
@@ -274,6 +275,7 @@ impl ECPoint for RistrettoPoint {
         buffer[32 - n..].copy_from_slice(bytes);
 
         CompressedRistretto::from_slice(&buffer)
+            .unwrap()
             .decompress()
             .ok_or(DeserializationError)
             .map(|ge| RistrettoPoint {
